@@ -1,0 +1,144 @@
+:root {
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #101010;
+  background-color: #f5f5f5;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #0f172a 0%, #1f2937 45%, #0b1120 100%);
+  color: #f8fafc;
+}
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 64px 24px 120px;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.hero h1 {
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  margin-bottom: 24px;
+}
+
+.hero p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  max-width: 820px;
+  margin: 0 auto;
+  color: #e2e8f0;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  font-size: 0.75rem;
+  color: #38bdf8;
+  margin-bottom: 12px;
+}
+
+.section {
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 16px;
+  padding: 32px 28px;
+  margin-bottom: 32px;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.45);
+}
+
+.section h2 {
+  font-size: 1.9rem;
+  margin-bottom: 24px;
+  color: #38bdf8;
+}
+
+.grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.vehicle-card,
+.milestone-card {
+  background: rgba(15, 23, 42, 0.68);
+  border-radius: 14px;
+  padding: 20px 22px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  transition: transform 200ms ease, border 200ms ease;
+}
+
+.vehicle-card:hover,
+.milestone-card:hover {
+  transform: translateY(-6px);
+  border-color: #38bdf8;
+}
+
+.vehicle-card h3,
+.milestone-card h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.3rem;
+  color: #facc15;
+}
+
+.vehicle-card p {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #e2e8f0;
+}
+
+.vehicle-card ul,
+.milestone-card ul,
+.next-actions {
+  margin: 0;
+  padding-left: 20px;
+  color: #cbd5f5;
+  line-height: 1.6;
+}
+
+.pillars {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.pillars h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #facc15;
+}
+
+.pillars p {
+  margin: 0;
+  line-height: 1.6;
+  color: #e2e8f0;
+}
+
+.milestones {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.next-actions {
+  display: grid;
+  gap: 12px;
+  font-size: 1.05rem;
+}
+
+@media (max-width: 600px) {
+  .section {
+    padding: 24px 20px;
+  }
+
+  .hero h1 {
+    font-size: 2.25rem;
+  }
+
+  .hero p {
+    font-size: 1rem;
+  }
+}
