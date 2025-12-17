@@ -12,11 +12,13 @@ const config = {
   appId: env('NEXT_PUBLIC_FIREBASE_APP_ID') || env('REACT_APP_FIREBASE_APP_ID'),
 };
 
-const isConfigMissing = Object.values(config).some((value) => !value);
+const missingKeys = Object.entries(config)
+  .filter(([, value]) => !value)
+  .map(([key]) => key);
 
-export const firebaseConfigMissing = isConfigMissing;
+export const firebaseConfigMissing = missingKeys.length > 0;
 
-export const firebaseApp =
-  getApps().length || isConfigMissing ? getApps()[0] : initializeApp(config);
+const existingApp = getApps()[0];
+export const firebaseApp = firebaseConfigMissing ? null : existingApp || initializeApp(config);
 
 export const firebaseAuth = firebaseApp ? getAuth(firebaseApp) : null;

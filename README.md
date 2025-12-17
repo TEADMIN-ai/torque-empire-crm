@@ -26,6 +26,19 @@ NEXT_PUBLIC_FIREBASE_APP_ID=...
 The dashboard requires a successful Firebase email/password login before viewing Dolibarr data and includes clear error
 messages if authentication fails or environment variables are missing.
 
+### Firebase admin (server-side) setup
+
+If you need admin SDK access (for user management or secure API routes), create a Firebase service account JSON locally,
+extract the following fields, and add them to your hosting environment (e.g., Vercel) without extra quotes or line-break
+changes:
+
+- `FIREBASE_PROJECT_ID`: e.g., `torque-empire-crm`
+- `FIREBASE_CLIENT_EMAIL`: e.g., `firebase-adminsdk-fbsvc@torque-empire-crm.iam.gserviceaccount.com`
+- `FIREBASE_PRIVATE_KEY`: keep the `\n` characters intact (do not convert them to real newlines)
+
+The admin initializer lives at `src/lib/firebase/admin.ts` and normalizes the private key newlines. Use it for any
+server-only code instead of importing from `firebase-admin` directly.
+
 The dashboard now includes:
 - An API connection card with inline validation and last-sync indicator.
 - Contact stats and filterable table rows (placeholder data shown until you sync).
