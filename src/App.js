@@ -1,6 +1,8 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import './App.css';
+import { firebaseAuth, firebaseConfigMissing } from './firebase';
 
 const SectionHeading = ({ title, count, description }) => (
   <header className="section-heading">
@@ -123,7 +125,83 @@ const useDolibarrContacts = () => {
   };
 };
 
-const DashboardPage = () => {
+const LoginPage = ({ onLogin }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = useCallback(
+    async (event) => {
+      event.preventDefault();
+      setError('');
+      if (!email.trim() || !password) {
+        setError('Email and password are required.');
+        return;
+      }
+
+      if (!firebaseAuth) {
+        setError('Firebase is not configured. Update your .env.local and restart.');
+        return;
+      }
+
+      try {
+        setSubmitting(true);
+        const { user } = await signInWithEmailAndPassword(firebaseAuth, email.trim(), password);
+        onLogin(user);
+      } catch (err) {
+        const message = err?.message || 'Unable to sign in. Check your credentials and try again.';
+        setError(message);
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [email, onLogin, password],
+  );
+
+  return (
+    <div className="layout">
+      <section className="card">
+        <SectionHeading title="Sign in" description="Authenticate with Firebase to access the dashboard" />
+        <form className="form-grid" onSubmit={handleSubmit}>
+          <label className="field">
+            <span>Email</span>
+            <input
+              type="email"
+              autoComplete="username"
+              placeholder="ckaraniete.za@gmail.com"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          </label>
+          <label className="field">
+            <span>Password</span>
+            <input
+              type="password"
+              autoComplete="current-password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+          </label>
+          <div className="actions">
+            <button type="submit" disabled={submitting}>
+              {submitting ? 'Signing in…' : 'Sign in'}
+            </button>
+          </div>
+          {error ? <p className="error">{error}</p> : null}
+          {firebaseConfigMissing ? (
+            <p className="error">
+              Firebase environment variables are missing. Update your .env.local and restart the dev server.
+            </p>
+          ) : null}
+        </form>
+      </section>
+    </div>
+  );
+};
+
+const DashboardPage = ({ user, onSignOut }) => {
   const [search, setSearch] = useState('');
   const { apiKey, baseUrl, contacts, error, loading, lastSync, setApiKey, setBaseUrl, fetchContacts } =
     useDolibarrContacts();
@@ -192,6 +270,11 @@ const DashboardPage = () => {
         </div>
         <div className="sync-meta">
           <span className="pill">{lastSync ? `Last sync: ${lastSync.toLocaleTimeString()}` : 'Not synced yet'}</span>
+          {user ? (
+            <button type="button" className="ghost" onClick={onSignOut}>
+              Sign out
+            </button>
+          ) : null}
         </div>
       </header>
 
@@ -288,12 +371,85 @@ const DashboardPage = () => {
   );
 };
 
+const AuthGate = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState('');
+
+  useEffect(() => {
+    if (!firebaseAuth) {
+      setAuthError('Firebase is not configured. Update your .env.local and restart.');
+      setLoading(false);
+      return () => {};
+    }
+
+    const unsubscribe = onAuthStateChanged(
+      firebaseAuth,
+      (nextUser) => {
+        setUser(nextUser);
+        setLoading(false);
+      },
+      (err) => {
+        setAuthError(err?.message || 'Authentication listener failed.');
+        setLoading(false);
+      },
+    );
+    return () => unsubscribe();
+  }, []);
+
+  const handleSignOut = useCallback(async () => {
+    if (!firebaseAuth) {
+      setAuthError('Firebase is not configured. Update your .env.local and restart.');
+      return;
+    }
+
+    try {
+      await signOut(firebaseAuth);
+      setUser(null);
+    } catch (err) {
+      setAuthError(err?.message || 'Failed to sign out.');
+    }
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="layout">
+        <section className="card">
+          <p className="eyebrow">Loading</p>
+          <p>Checking your authentication status…</p>
+        </section>
+      </div>
+    );
+  }
+
+  if (authError) {
+    return (
+      <div className="layout">
+        <section className="card">
+          <p className="eyebrow">Authentication error</p>
+          <p className="error">{authError}</p>
+        </section>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginPage onLogin={setUser} />;
+  }
+
+  return children(user, handleSignOut);
+};
+
 const App = () => (
-  <Routes>
-    <Route path="/" element={<Navigate to="/dashboard" replace />} />
-    <Route path="/dashboard" element={<DashboardPage />} />
-    <Route path="*" element={<Navigate to="/dashboard" replace />} />
-  </Routes>
+  <AuthGate>
+    {(user, handleSignOut) => (
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<DashboardPage user={user} onSignOut={handleSignOut} />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    )}
+  </AuthGate>
 );
 
 export default App;

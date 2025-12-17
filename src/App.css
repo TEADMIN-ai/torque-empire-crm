@@ -145,6 +145,14 @@ button {
   box-shadow: 0 10px 30px rgba(59, 130, 246, 0.35);
 }
 
+.ghost {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  padding: 10px 14px;
+}
+
 button:hover {
   transform: translateY(-1px);
 }
