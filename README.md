@@ -1,2 +1,60 @@
 # Torque Empire CRM
-Deployed with flat structure for Vercel.
+
+A minimal React dashboard showcasing Dolibarr contacts integration. Provide your Dolibarr API base URL (e.g.
+`https://your-dolibarr.example.com/api/index.php`) and API key to sync contacts, filter them quickly, and view core
+fields in a responsive table alongside a curated open-deals snapshot.
+
+## Quick start
+1. Install dependencies: `npm install`
+2. Run locally: `npm start`
+3. Enter your Dolibarr API base URL and API key, then click **Sync contacts** on the **/dashboard** route.
+
+### Firebase authentication
+
+- Ensure the admin user `ckaraniete.za@gmail.com` exists in Firebase Authentication before signing in.
+- Create a `.env.local` file with your Firebase credentials (restart the dev server after editing):
+
+```
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+NEXT_PUBLIC_FIREBASE_APP_ID=...
+```
+
+The dashboard requires a successful Firebase email/password login before viewing Dolibarr data and includes clear error
+messages if authentication fails or environment variables are missing.
+
+### Firebase admin (server-side) setup
+
+If you need admin SDK access (for user management or secure API routes), create a Firebase service account JSON locally,
+extract the following fields, and add them to your hosting environment (e.g., Vercel) without extra quotes or line-break
+changes:
+
+- `FIREBASE_PROJECT_ID`: e.g., `torque-empire-crm`
+- `FIREBASE_CLIENT_EMAIL`: e.g., `firebase-adminsdk-fbsvc@torque-empire-crm.iam.gserviceaccount.com`
+- `FIREBASE_PRIVATE_KEY`: keep the `\n` characters intact (do not convert them to real newlines)
+
+The admin initializer lives at `src/lib/firebase/admin.ts` and normalizes the private key newlines. Use it for any
+server-only code instead of importing from `firebase-admin` directly.
+
+### Multi-tenant binding (companyId)
+
+For APIs that enforce tenant isolation, ensure each user document in Firestore includes a `companyId` field:
+
+```json
+{
+  "companyId": "torque-empire"
+}
+```
+
+Without this field, tenant-scoped APIs will return empty results even after successful authentication.
+
+The dashboard now includes:
+- An API connection card with inline validation and last-sync indicator.
+- Contact stats and filterable table rows (placeholder data shown until you sync).
+- An open-deals grid to highlight pipeline health.
+
+Credentials are only kept in memory while the page is open. For production deployments, use environment variables or a
+backend proxy to protect secrets.
