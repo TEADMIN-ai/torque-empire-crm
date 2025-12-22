@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, signInWithRedirect } from 'firebase/auth';
 
 const env = (key) => process.env[key];
 
@@ -22,3 +22,11 @@ const existingApp = getApps()[0];
 export const firebaseApp = firebaseConfigMissing ? null : existingApp || initializeApp(config);
 
 export const firebaseAuth = firebaseApp ? getAuth(firebaseApp) : null;
+
+// Provide a minimal compatibility layer for code paths that expect signInWithRedirect
+// to exist as a method on the Auth instance. The modular SDK exposes it as a
+// standalone function instead, which can lead to `TypeError: signInWithRedirect is
+// not a function` errors when older integrations call `auth.signInWithRedirect(...)`.
+if (firebaseAuth && typeof firebaseAuth.signInWithRedirect !== 'function') {
+  firebaseAuth.signInWithRedirect = (provider) => signInWithRedirect(firebaseAuth, provider);
+}
