@@ -1,4 +1,5 @@
 import admin from '../firebase/admin';
+import { firebaseAuth } from '../../firebase';
 
 type FirestoreDeal = Record<string, unknown>;
 
@@ -7,7 +8,9 @@ export type Deal = FirestoreDeal & {
 };
 
 export const getDealsForUser = async (userId?: string | null): Promise<Deal[]> => {
-  if (!userId) {
+  const resolvedUserId = userId ?? firebaseAuth?.currentUser?.uid ?? null;
+
+  if (!resolvedUserId) {
     return [];
   }
 
@@ -21,7 +24,7 @@ export const getDealsForUser = async (userId?: string | null): Promise<Deal[]> =
       return [];
     }
 
-    const snapshot = await firestore.collection('deals').where('ownerId', '==', userId).get();
+    const snapshot = await firestore.collection('deals').where('ownerId', '==', resolvedUserId).get();
 
     return snapshot.docs.map((doc) => ({
       id: doc.id,
