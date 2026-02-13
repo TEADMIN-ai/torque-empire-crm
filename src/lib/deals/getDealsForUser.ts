@@ -1,11 +1,8 @@
 import admin from '../firebase/admin';
 import { firebaseAuth } from '../../firebase';
+import type { Deal } from '../../types/deal';
 
 type FirestoreDeal = Record<string, unknown>;
-
-export type Deal = FirestoreDeal & {
-  id?: string;
-};
 
 export const getDealsForUser = async (userId?: string | null): Promise<Deal[]> => {
   const resolvedUserId = userId ?? firebaseAuth?.currentUser?.uid ?? null;
@@ -29,7 +26,7 @@ export const getDealsForUser = async (userId?: string | null): Promise<Deal[]> =
     return snapshot.docs.map((doc) => ({
       id: doc.id,
       ...(doc.data() as FirestoreDeal),
-    }));
+    })) as Deal[];
   } catch {
     return [];
   }
